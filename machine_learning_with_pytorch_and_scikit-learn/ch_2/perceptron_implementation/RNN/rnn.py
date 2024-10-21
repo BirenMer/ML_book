@@ -45,6 +45,11 @@ class RNN:
         self.b = np.zeros((hidden_size, 1))  # Bias for hidden layer
         self.c = np.zeros((vocab_size, 1))  # Bias for output layer
 
+    # Implementing the softmax function
+    def softmax(self, x):
+        p = np.exp(x - np.max(x))
+        return p / np.sum(p)
+
     # Defnining the forward pass
     def forward(self, inputs, hprev):
         """
@@ -84,10 +89,7 @@ class RNN:
             )  
         return xs, hs, ycap
 
-    # implementing the softmax function
-    def softmax(self, x):
-        p = np.exp(x - np.max(x))
-        return p / np.sum(p)
+ 
 
     # defining the loss function
     def loss(self, ps, targets):
