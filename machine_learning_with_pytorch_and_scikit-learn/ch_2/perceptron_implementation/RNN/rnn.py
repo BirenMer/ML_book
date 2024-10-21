@@ -1,4 +1,5 @@
 import numpy as np
+from data_reader import DataReader 
 
 """
 We will try to build a text generation model using an RNN.
@@ -164,3 +165,25 @@ class RNN:
         ):
             # Changing paramerters according to gradients and learning rate
             param += -self.learning_rate * d_param
+    #adding a predict method 
+    def predict(self,data_reader,start,n):
+        #initialize input vector
+        x=np.zeros(self.vocab_size,1)
+        chars=[ch for ch in start]
+        ixes=[]
+        for i in range(len(chars)):
+            ix=data_reader.char_to_ix[chars[i]]
+            x[ix]=1
+            ixes.append(ix)
+        h=np.zeros((self.hidden_size,1))
+
+        # Predicing next n in chars
+        for t in range(n):
+            h=np.tanh(np.dot(self.U,x)+np.dot(self.W,h)+self.b)
+            y=np.dot(self.V,h)+self.c
+            p=np.exp(y)/np.sum(np.exp(y))
+            ix=np.zeros(self.vocab_size,1)
+            x[ix]=1
+            ixes.append(ix)
+        txt=''.join(data_reader.ix_to_char[i] for i in ixes)
+        return txt
