@@ -99,6 +99,24 @@ class RNN:
 
     # Defining the backward pass / back propogation BPTT
     def backward(self, xs, hs, ycap, targets):
+
+        """
+        dh_next: This variable holds the gradient of the loss with respect to the hidden state from the next time step 
+        (i.e., time step t+1).
+        dh_rec: Represents the recurrent component of the gradient with respect to the hidden state.
+
+        Flow for Backward pass function:
+        
+        1. Compute the output gradient dy from the softmax output, 
+           which indicates how much the predicted output differs from the target.
+        2. Calculate the gradients dV and dc based on this output gradient.
+        3. Backpropagate through the hidden states using the gradients to
+           calculate dh (including contributions from the next hidden state) and subsequently calculate dh_rec.
+        4. Update the gradients for dU and dW using dh_rec.
+        5. Finally, clip the gradients to prevent any exploding gradients before returning t.
+
+        """
+
         # backward pass computer gradients
         dU, dW, dV = np.zeros_like(self.U), np.zeros_like(self.W), np.zeros_like(self.V)
         db, dc = np.zeros_like(self.b), np.zeros_like(self.c)
@@ -132,10 +150,11 @@ class RNN:
         # Clipping weights to avoid gradient explosion.
         for d_param in [dU, dW, dV, db, dc]:
             np.clip(d_param, -5, 5, out=d_param)
+        
         return dU, dW, dV, db, dc
 
     """
-    Using BPTT we calculated the gradient for each parameter of the model. it is now time to update the weights.
+    Using BPTT (Backpropagation Through Time) we calculated the gradient for each parameter of the model. it is now time to update the weights.
     """
 
     # Defining the weight update function
