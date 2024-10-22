@@ -186,4 +186,6 @@ class RNN:
             x[ix]=1
             ixes.append(ix)
         txt=''.join(data_reader.ix_to_char[i] for i in ixes)
-        return txt
+        return txt 
+    def train(self,data_reader):
+        pass
