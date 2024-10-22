@@ -188,4 +188,22 @@ class RNN:
         txt=''.join(data_reader.ix_to_char[i] for i in ixes)
         return txt 
     def train(self,data_reader):
-        pass
+        iter_num=0
+        threshold=0.1
+        smooth_loss=-np.log(1.0/data_reader.vocab_size)*self.seq_length
+        while(smooth_loss>threshold):
+            if data_reader.just_started():
+                h_prev=np.zeros((self.hidden_size,1))
+            inputs,targets=data_reader.next_batch()
+            xs,hs,ycap=self.forward(inputs,h_prev)
+            dU,dW,dV,db,dc=self.backward(xs=xs,hs=hs,ycap=ycap,targets=targets)
+            loss=(ycap,targets)
+            self.update_model(dU,dW,dV,db,dc)
+            smooth_loss=smooth_loss*0.999+loss*0.001
+            h_prev=hs[self.seq_length-1]
+            if not iter_num%500:
+                sample_ix=self.sample(h_prev,inputs[0],200)
+                print(''.join(data_reader.ix_to_char[ix] for ix in sample_ix))
+                print("\n\n iter : %d,loss : %f"%(iter_num,smooth_loss))
+            iter_num+=1
+        
