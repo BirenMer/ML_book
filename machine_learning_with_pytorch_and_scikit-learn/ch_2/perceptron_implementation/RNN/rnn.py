@@ -71,8 +71,8 @@ class RNN:
         xs, hs, os, ycap = {}, {}, {}, {}
         hs[-1] = np.copy(hprev)
         for t in range(len(inputs)):
-            xs[t] = np.zeros(self.vocab_size, 1)
-            xs[t][inputs[t]] = 1  # one hot encoding,1-of-k
+            xs[t] = np.zeros((self.vocab_size, 1)) # one hot encoding,1-of-k
+            xs[t][inputs[t]] = 1  
             
             # Compute the hidden state
             hs[t] = np.tanh(
@@ -93,10 +93,10 @@ class RNN:
  
 
     # defining the loss function
-    def loss(self, ps, targets):
+    def loss(self, ycap, targets):
         """loss of sequence"""
         # Calculating cross-entropy loss
-        return sum(-np.log(ps[t][targets[t], 0] for t in range(self.seq_length)))
+        return sum(-np.log(ycap[t][targets[t], 0]) for t in range(self.seq_length))
 
     # Defining the backward pass / back propogation BPTT
     def backward(self, xs, hs, ycap, targets):
@@ -191,19 +191,43 @@ class RNN:
         iter_num=0
         threshold=0.1
         smooth_loss=-np.log(1.0/data_reader.vocab_size)*self.seq_length
+
         while(smooth_loss>threshold):
             if data_reader.just_started():
                 h_prev=np.zeros((self.hidden_size,1))
+
             inputs,targets=data_reader.next_batch()
             xs,hs,ycap=self.forward(inputs,h_prev)
+
+            loss=self.loss(ycap,targets)
+            
             dU,dW,dV,db,dc=self.backward(xs=xs,hs=hs,ycap=ycap,targets=targets)
-            loss=(ycap,targets)
+            
             self.update_model(dU,dW,dV,db,dc)
-            smooth_loss=smooth_loss*0.999+loss*0.001
+            # smooth_loss=smooth_loss*0.999+loss*0.001
+            print(f"loss TYPE : {type(loss)} \n {loss}")
+            smooth_loss = smooth_loss * 0.999 + loss * 0.001
             h_prev=hs[self.seq_length-1]
             if not iter_num%500:
                 sample_ix=self.sample(h_prev,inputs[0],200)
                 print(''.join(data_reader.ix_to_char[ix] for ix in sample_ix))
                 print("\n\n iter : %d,loss : %f"%(iter_num,smooth_loss))
             iter_num+=1
+    def sample(self, h, seed_ix, n):
+            """
+            sample a sequence of integers from the model
+            h is memory state, seed_ix is seed letter from the first time step
+            """
+            x = np.zeros((self.vocab_size, 1))
+            x[seed_ix] = 1
+            ixes = []
+            for t in range(n):
+                h = np.tanh(np.dot(self.U, x) + np.dot(self.W, h) + self.b)
+                y = np.dot(self.V, h) + self.c
+                p = np.exp(y)/np.sum(np.exp(y))
+                ix = np.random.choice(range(self.vocab_size), p = p.ravel())
+                x = np.zeros((self.vocab_size,1))
+                x[ix] = 1
+                ixes.append(ix)
+            return ixes
         
