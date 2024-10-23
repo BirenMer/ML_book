@@ -1,2 +1,4 @@
 ml_book
 *.pyc
+*.pkl
+*.txt
