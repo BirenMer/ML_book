@@ -83,6 +83,9 @@ class RNN:
             os[t] = (
                 np.dot(self.V, hs[t]) + self.c
             )  
+            # Apply clipping to avoid overflow in softmax
+            if np.any(np.abs(os[t]) > 100):
+                os[t] = np.clip(os[t], -100, 100)
             
             # Apply softmax to get the probabilities for the next character
             ycap[t] = self.softmax(
@@ -94,9 +97,9 @@ class RNN:
 
     # defining the loss function
     def loss(self, ycap, targets):
-        """loss of sequence"""
-        # Calculating cross-entropy loss
-        return sum(-np.log(ycap[t][targets[t], 0]) for t in range(self.seq_length))
+        epsilon = 1e-8  # small value to prevent log(0)
+        return sum(-np.log(np.clip(ycap[t][targets[t], 0], epsilon, 1.0)) for t in range(self.seq_length))
+
 
     # Defining the backward pass / back propogation BPTT
     def backward(self, xs, hs, ycap, targets):
@@ -187,12 +190,13 @@ class RNN:
             ixes.append(ix)
         txt=''.join(data_reader.ix_to_char[i] for i in ixes)
         return txt 
-    def train(self,data_reader):
+    def train(self,data_reader,max_iters=10000):
         iter_num=0
         threshold=0.1
         smooth_loss=-np.log(1.0/data_reader.vocab_size)*self.seq_length
 
-        while(smooth_loss>threshold):
+        # while(smooth_loss>threshold):
+        while smooth_loss > threshold and iter_num < max_iters:
             if data_reader.just_started():
                 h_prev=np.zeros((self.hidden_size,1))
 
@@ -213,21 +217,69 @@ class RNN:
                 print(''.join(data_reader.ix_to_char[ix] for ix in sample_ix))
                 print("\n\n iter : %d,loss : %f"%(iter_num,smooth_loss))
             iter_num+=1
+    # def sample(self, h, seed_ix, n):
+    #         """
+    #         sample a sequence of integers from the model
+    #         h is memory state, seed_ix is seed letter from the first time step
+    #         """
+    #         x = np.zeros((self.vocab_size, 1))
+    #         x[seed_ix] = 1
+    #         ixes = []
+    #         for t in range(n):
+    #             h = np.tanh(np.dot(self.U, x) + np.dot(self.W, h) + self.b)
+    #             y = np.dot(self.V, h) + self.c
+    #             p = np.exp(y)/np.sum(np.exp(y))
+    #             ix = np.random.choice(range(self.vocab_size), p = p.ravel())
+    #             x = np.zeros((self.vocab_size,1))
+    #             x[ix] = 1
+    #             ixes.append(ix)
+    #         return ixes
     def sample(self, h, seed_ix, n):
-            """
-            sample a sequence of integers from the model
-            h is memory state, seed_ix is seed letter from the first time step
-            """
-            x = np.zeros((self.vocab_size, 1))
-            x[seed_ix] = 1
-            ixes = []
-            for t in range(n):
-                h = np.tanh(np.dot(self.U, x) + np.dot(self.W, h) + self.b)
-                y = np.dot(self.V, h) + self.c
-                p = np.exp(y)/np.sum(np.exp(y))
-                ix = np.random.choice(range(self.vocab_size), p = p.ravel())
-                x = np.zeros((self.vocab_size,1))
-                x[ix] = 1
-                ixes.append(ix)
-            return ixes
+        """
+        Sample a sequence of integers from the model.
         
+        Args:
+            h: The hidden state from the previous time step.
+            seed_ix: The index of the seed character (starting character).
+            n: The number of characters to predict.
+        
+        Returns:
+            ixes: A list of indices representing the generated characters.
+        """
+        # Initialize the input vector with one-hot encoding
+        x = np.zeros((self.vocab_size, 1))
+        x[seed_ix] = 1
+        ixes = []  # Store the sampled character indices
+
+        # Sample for n time steps
+        for t in range(n):
+            # Compute hidden state: h[t] = tanh(U*x[t] + W*h[t-1] + b)
+            h = np.tanh(np.dot(self.U, x) + np.dot(self.W, h) + self.b)
+
+            # Compute output logits: y[t] = V*h[t] + c
+            y = np.dot(self.V, h) + self.c
+
+            # Check if the logits (y) contain large values that could cause overflow
+            if np.any(np.abs(y) > 100):
+                print("Warning: Large values detected in logits (y).")
+                # Clip large values to prevent overflow when applying exp()
+                y = np.clip(y, -100, 100)
+
+            # Apply softmax to get the probabilities for the next character
+            p = np.exp(y - np.max(y))  # Normalize logits by subtracting the max for stability
+            p = p / (np.sum(p) + 1e-8)  # Add a small epsilon to prevent division by zero
+
+            # Ensure probabilities are valid (no NaNs or Infs)
+            if np.isnan(p).any() or np.isinf(p).any():
+                print("NaN or Inf detected in probabilities. Stopping.")
+                break
+
+            # Sample the next character index from the probability distribution
+            ix = np.random.choice(range(self.vocab_size), p=p.ravel())
+
+            # Prepare the input for the next time step by one-hot encoding the sampled character
+            x = np.zeros((self.vocab_size, 1))
+            x[ix] = 1
+            ixes.append(ix)  # Add the sampled character index to the result
+
+        return ixes
