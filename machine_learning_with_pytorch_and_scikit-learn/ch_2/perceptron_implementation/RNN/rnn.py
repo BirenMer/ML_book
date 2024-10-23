@@ -1,5 +1,5 @@
 import numpy as np
-from data_reader import DataReader 
+from data_reader import DataReader
 
 """
 We will try to build a text generation model using an RNN.
@@ -71,47 +71,40 @@ class RNN:
         xs, hs, os, ycap = {}, {}, {}, {}
         hs[-1] = np.copy(hprev)
         for t in range(len(inputs)):
-            xs[t] = np.zeros((self.vocab_size, 1)) # one hot encoding,1-of-k
-            xs[t][inputs[t]] = 1  
-            
+            xs[t] = np.zeros((self.vocab_size, 1))  # one hot encoding,1-of-k
+            xs[t][inputs[t]] = 1
+
             # Compute the hidden state
-            hs[t] = np.tanh(
-                np.dot(self.U, xs[t]) + np.dot(self.W, hs[t - 1]) + self.b
-            )  
-            
+            hs[t] = np.tanh(np.dot(self.U, xs[t]) + np.dot(self.W, hs[t - 1]) + self.b)
+
             # Compute the output logits
-            os[t] = (
-                np.dot(self.V, hs[t]) + self.c
-            )  
+            os[t] = np.dot(self.V, hs[t]) + self.c
             # Apply clipping to avoid overflow in softmax
             if np.any(np.abs(os[t]) > 100):
                 os[t] = np.clip(os[t], -100, 100)
-            
-            # Apply softmax to get the probabilities for the next character
-            ycap[t] = self.softmax(
-                os[t]
-            )  
-        return xs, hs, ycap
 
- 
+            # Apply softmax to get the probabilities for the next character
+            ycap[t] = self.softmax(os[t])
+        return xs, hs, ycap
 
     # defining the loss function
     def loss(self, ycap, targets):
         epsilon = 1e-8  # small value to prevent log(0)
-        return sum(-np.log(np.clip(ycap[t][targets[t], 0], epsilon, 1.0)) for t in range(self.seq_length))
-
+        return sum(
+            -np.log(np.clip(ycap[t][targets[t], 0], epsilon, 1.0))
+            for t in range(self.seq_length)
+        )
 
     # Defining the backward pass / back propogation BPTT
     def backward(self, xs, hs, ycap, targets):
-
         """
-        dh_next: This variable holds the gradient of the loss with respect to the hidden state from the next time step 
+        dh_next: This variable holds the gradient of the loss with respect to the hidden state from the next time step
         (i.e., time step t+1).
         dh_rec: Represents the recurrent component of the gradient with respect to the hidden state.
 
         Flow for Backward pass function:
-        
-        1. Compute the output gradient dy from the softmax output, 
+
+        1. Compute the output gradient dy from the softmax output,
            which indicates how much the predicted output differs from the target.
         2. Calculate the gradients dV and dc based on this output gradient.
         3. Backpropagate through the hidden states using the gradients to
@@ -154,7 +147,7 @@ class RNN:
         # Clipping weights to avoid gradient explosion.
         for d_param in [dU, dW, dV, db, dc]:
             np.clip(d_param, -100, 100, out=d_param)
-        
+
         return dU, dW, dV, db, dc
 
     """
@@ -168,81 +161,83 @@ class RNN:
         ):
             # Changing paramerters according to gradients and learning rate
             param += -self.learning_rate * d_param
-    #adding a predict method 
-    def predict(self,data_reader,start,n):
-        #initialize input vector
-        x=np.zeros(self.vocab_size,1)
-        chars=[ch for ch in start]
-        ixes=[]
-        for i in range(len(chars)):
-            ix=data_reader.char_to_ix[chars[i]]
-            x[ix]=1
-            ixes.append(ix)
-        h=np.zeros((self.hidden_size,1))
 
-        # Predicing next n in chars
-        for t in range(n):
-            h=np.tanh(np.dot(self.U,x)+np.dot(self.W,h)+self.b)
-            y=np.dot(self.V,h)+self.c
-            p=np.exp(y)/np.sum(np.exp(y))
-            ix=np.zeros(self.vocab_size,1)
-            x[ix]=1
+    # Adding a predict method
+    def predict(self, data_reader, start, n):
+    # Initialize input vector
+        x = np.zeros((self.vocab_size, 1))
+        
+        # Convert the start sequence to indices
+        chars = [ch for ch in start]
+        ixes = []
+        
+        for i in range(len(chars)):
+            ix = data_reader.char_to_ix[chars[i]]
+            x[ix] = 1  # Set the input vector for the first character
             ixes.append(ix)
-        txt=''.join(data_reader.ix_to_char[i] for i in ixes)
-        return txt 
-    def train(self,data_reader,max_iters=10000):
-        iter_num=0
-        threshold=0.1
-        smooth_loss=-np.log(1.0/data_reader.vocab_size)*self.seq_length
+        
+        h = np.zeros((self.hidden_size, 1))  # Initialize hidden state
+
+        # Predict the next n characters
+        for t in range(n):
+            # Forward pass through the RNN
+            h = np.tanh(np.dot(self.U, x) + np.dot(self.W, h) + self.b)
+            y = np.dot(self.V, h) + self.c
+            
+            # Apply softmax to get the probabilities for the next character
+            p = np.exp(y) / np.sum(np.exp(y))
+            
+            # Sample the next character index from the probability distribution
+            ix = np.random.choice(range(self.vocab_size), p=p.ravel())  # Now ix is an integer
+            
+            # Update the input vector to be one-hot encoded for the next character
+            x = np.zeros((self.vocab_size, 1))
+            x[ix] = 1  # Set the input vector for the next character
+            
+            # Store the predicted character index
+            ixes.append(ix)
+        
+        # Convert predicted indices back to characters
+        txt = ''.join(data_reader.ix_to_char[i] for i in ixes)
+        return txt
+
+    def train(self, data_reader, max_iters=10000):
+        iter_num = 0
+        threshold = 0.1
+        smooth_loss = -np.log(1.0 / data_reader.vocab_size) * self.seq_length
 
         # while(smooth_loss>threshold):
         while smooth_loss > threshold and iter_num < max_iters:
             if data_reader.just_started():
-                h_prev=np.zeros((self.hidden_size,1))
+                h_prev = np.zeros((self.hidden_size, 1))
 
-            inputs,targets=data_reader.next_batch()
-            xs,hs,ycap=self.forward(inputs,h_prev)
+            inputs, targets = data_reader.next_batch()
+            xs, hs, ycap = self.forward(inputs, h_prev)
 
-            loss=self.loss(ycap,targets)
-            
-            dU,dW,dV,db,dc=self.backward(xs=xs,hs=hs,ycap=ycap,targets=targets)
-            
-            self.update_model(dU,dW,dV,db,dc)
+            loss = self.loss(ycap, targets)
+
+            dU, dW, dV, db, dc = self.backward(xs=xs, hs=hs, ycap=ycap, targets=targets)
+
+            self.update_model(dU, dW, dV, db, dc)
             # smooth_loss=smooth_loss*0.999+loss*0.001
             print(f"loss TYPE : {type(loss)} \n {loss}")
             smooth_loss = smooth_loss * 0.999 + loss * 0.001
-            h_prev=hs[self.seq_length-1]
-            if not iter_num%500:
-                sample_ix=self.sample(h_prev,inputs[0],200)
-                print(''.join(data_reader.ix_to_char[ix] for ix in sample_ix))
-                print("\n\n iter : %d,loss : %f"%(iter_num,smooth_loss))
-            iter_num+=1
-    # def sample(self, h, seed_ix, n):
-    #         """
-    #         sample a sequence of integers from the model
-    #         h is memory state, seed_ix is seed letter from the first time step
-    #         """
-    #         x = np.zeros((self.vocab_size, 1))
-    #         x[seed_ix] = 1
-    #         ixes = []
-    #         for t in range(n):
-    #             h = np.tanh(np.dot(self.U, x) + np.dot(self.W, h) + self.b)
-    #             y = np.dot(self.V, h) + self.c
-    #             p = np.exp(y)/np.sum(np.exp(y))
-    #             ix = np.random.choice(range(self.vocab_size), p = p.ravel())
-    #             x = np.zeros((self.vocab_size,1))
-    #             x[ix] = 1
-    #             ixes.append(ix)
-    #         return ixes
+            h_prev = hs[self.seq_length - 1]
+            if not iter_num % 500:
+                sample_ix = self.sample(h_prev, inputs[0], 200)
+                print("".join(data_reader.ix_to_char[ix] for ix in sample_ix))
+                print("\n\n iter : %d,loss : %f" % (iter_num, smooth_loss))
+            iter_num += 1
+
     def sample(self, h, seed_ix, n):
         """
         Sample a sequence of integers from the model.
-        
+
         Args:
             h: The hidden state from the previous time step.
             seed_ix: The index of the seed character (starting character).
             n: The number of characters to predict.
-        
+
         Returns:
             ixes: A list of indices representing the generated characters.
         """
@@ -266,8 +261,12 @@ class RNN:
                 y = np.clip(y, -100, 100)
 
             # Apply softmax to get the probabilities for the next character
-            p = np.exp(y - np.max(y))  # Normalize logits by subtracting the max for stability
-            p = p / (np.sum(p) + 1e-8)  # Add a small epsilon to prevent division by zero
+            p = np.exp(
+                y - np.max(y)
+            )  # Normalize logits by subtracting the max for stability
+            p = p / (
+                np.sum(p) + 1e-8
+            )  # Add a small epsilon to prevent division by zero
 
             # Ensure probabilities are valid (no NaNs or Infs)
             if np.isnan(p).any() or np.isinf(p).any():
