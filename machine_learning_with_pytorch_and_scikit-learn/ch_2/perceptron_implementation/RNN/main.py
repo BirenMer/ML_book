@@ -5,7 +5,8 @@ training_file_path="/home/wifee/workspace/learning/ML_book/Mobi_dick_book.txt"
 
 if __name__ == "__main__":
     model,data_reader = train_rnn(training_file_path)
-    # Save model is done inside train_rnn, but you can load later for prediction
+    
+    # Save model is done inside train_rnn, but you can load later for prediction (I personally don't recommend doing so.)
     # rnn = load_rnn("rnn_model.pkl")
     
     # Example of making a prediction

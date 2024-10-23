@@ -15,7 +15,7 @@ def train_rnn(training_file_path, seq_length=25, hidden_size=100, learning_rate=
     data_reader.close()
     
     # Save the trained model and data reader
-    with open("trained_model.pkl", "wb") as f:
+    with open("rnn_model.pkl", "wb") as f:
         pickle.dump((rnn), f)
 
     return rnn,data_reader
