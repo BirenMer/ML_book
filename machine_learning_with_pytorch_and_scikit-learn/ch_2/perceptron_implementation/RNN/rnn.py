@@ -153,7 +153,7 @@ class RNN:
 
         # Clipping weights to avoid gradient explosion.
         for d_param in [dU, dW, dV, db, dc]:
-            np.clip(d_param, -5, 5, out=d_param)
+            np.clip(d_param, -100, 100, out=d_param)
         
         return dU, dW, dV, db, dc
 
