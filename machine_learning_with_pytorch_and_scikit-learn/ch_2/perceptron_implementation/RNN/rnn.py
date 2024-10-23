@@ -46,6 +46,13 @@ class RNN:
         self.b = np.zeros((hidden_size, 1))  # Bias for hidden layer
         self.c = np.zeros((vocab_size, 1))  # Bias for output layer
 
+        # Initialize memory variables for Adagrad
+        self.mU = np.zeros_like(self.U)
+        self.mW = np.zeros_like(self.W)
+        self.mV = np.zeros_like(self.V)
+        self.mb = np.zeros_like(self.b)
+        self.mc = np.zeros_like(self.c)
+
     # Implementing the softmax function
     def softmax(self, x):
         p = np.exp(x - np.max(x))
@@ -146,7 +153,7 @@ class RNN:
 
         # Clipping weights to avoid gradient explosion.
         for d_param in [dU, dW, dV, db, dc]:
-            np.clip(d_param, -100, 100, out=d_param)
+            np.clip(d_param, -5, 5, out=d_param)
 
         return dU, dW, dV, db, dc
 
@@ -154,28 +161,44 @@ class RNN:
     Using BPTT (Backpropagation Through Time) we calculated the gradient for each parameter of the model. it is now time to update the weights.
     """
 
-    # Defining the weight update function
+    # Defining the weight update function 
+
+    # Uncomment the below function to see the diffrenece between the loss optimization using SDG and Adagrad optimizers.
+
+    # def update_model(self, dU, dV, dW, db, dc):
+    #     for param, d_param in zip(
+    #         [self.U, self.W, self.V, self.b, self.c], [dU, dV, dW, db, dc]
+    #     ):
+    #         # Changing paramerters according to gradients and learning rate
+    #         param += -self.learning_rate * d_param
+
+    # Defining the weight update function using Adagrad
     def update_model(self, dU, dV, dW, db, dc):
-        for param, d_param in zip(
-            [self.U, self.W, self.V, self.b, self.c], [dU, dV, dW, db, dc]
+        for param, dparam, mem in zip(
+            [self.U, self.W, self.V, self.b, self.c],
+            [dU, dW, dV, db, dc],
+            [self.mU, self.mW, self.mV, self.mb, self.mc],
         ):
-            # Changing paramerters according to gradients and learning rate
-            param += -self.learning_rate * d_param
+            # Update memory cache
+            mem += dparam * dparam
+
+            # Adagrad parameter update
+            param += -self.learning_rate * dparam / np.sqrt(mem + 1e-8)
 
     # Adding a predict method
     def predict(self, data_reader, start, n):
-    # Initialize input vector
+        # Initialize input vector
         x = np.zeros((self.vocab_size, 1))
-        
+
         # Convert the start sequence to indices
         chars = [ch for ch in start]
         ixes = []
-        
+
         for i in range(len(chars)):
             ix = data_reader.char_to_ix[chars[i]]
             x[ix] = 1  # Set the input vector for the first character
             ixes.append(ix)
-        
+
         h = np.zeros((self.hidden_size, 1))  # Initialize hidden state
 
         # Predict the next n characters
@@ -183,22 +206,24 @@ class RNN:
             # Forward pass through the RNN
             h = np.tanh(np.dot(self.U, x) + np.dot(self.W, h) + self.b)
             y = np.dot(self.V, h) + self.c
-            
+
             # Apply softmax to get the probabilities for the next character
             p = np.exp(y) / np.sum(np.exp(y))
-            
+
             # Sample the next character index from the probability distribution
-            ix = np.random.choice(range(self.vocab_size), p=p.ravel())  # Now ix is an integer
-            
+            ix = np.random.choice(
+                range(self.vocab_size), p=p.ravel()
+            )  # Now ix is an integer
+
             # Update the input vector to be one-hot encoded for the next character
             x = np.zeros((self.vocab_size, 1))
             x[ix] = 1  # Set the input vector for the next character
-            
+
             # Store the predicted character index
             ixes.append(ix)
-        
+
         # Convert predicted indices back to characters
-        txt = ''.join(data_reader.ix_to_char[i] for i in ixes)
+        txt = "".join(data_reader.ix_to_char[i] for i in ixes)
         return txt
 
     def train(self, data_reader, max_iters=10000):
@@ -218,7 +243,7 @@ class RNN:
 
             dU, dW, dV, db, dc = self.backward(xs=xs, hs=hs, ycap=ycap, targets=targets)
 
-            self.update_model(dU, dW, dV, db, dc)
+            self.update_model(dU, dV, dW, db, dc)
             # smooth_loss=smooth_loss*0.999+loss*0.001
             print(f"loss TYPE : {type(loss)} \n {loss}")
             smooth_loss = smooth_loss * 0.999 + loss * 0.001
