@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from perceptron import Perceptron
-from visualization_utils import plot_decision_regions
+from utils.visualization_utils import plot_decision_regions
 
 s = 'https://archive.ics.uci.edu/ml/'\
      'machine-learning-databases/iris/iris.data'
