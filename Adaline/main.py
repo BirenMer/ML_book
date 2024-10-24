@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
-from adaline import AdalineGD
+from Adaline.adalineGD import AdalineGD
 import os
 import pandas as pd
 
