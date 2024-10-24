@@ -40,6 +40,7 @@ ppn.fit(X, y)
 # plt.xlabel('Epochs')
 # plt.ylabel('Number of updates')
 
+#Second part ----
 
 # Mapping the different decision regions to different colors for each 
 # predicted class in the grid array.
