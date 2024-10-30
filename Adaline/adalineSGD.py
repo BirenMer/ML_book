@@ -1,6 +1,6 @@
 import numpy as np
 
-class AdalineSDG:
+class AdalineSGD:
     """ADAptive LInear NEuron classifier.
         
         Parameters
@@ -50,7 +50,7 @@ class AdalineSDG:
             self : object
             
         """
-        self.initialize_weights(X.shape[1])
+        self._initialize_weights(X.shape[1])
         self.losses_=[]
 
         for i in range(self.n_iter):
