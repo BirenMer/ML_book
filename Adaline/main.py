@@ -26,7 +26,18 @@ y = np.where(y == 'Iris-setosa', 0, 1)
 X = df.iloc[0:100, [0, 2]].values
 
 
+
+# UNCOMMENT THE BELOW POINTS TO VIEW THE DATA GRAPH.
+
+# plt.scatter(X[:50, 0], X[:50, 1], color='red', marker='o', label='Setosa')
+# plt.scatter(X[50:100, 0], X[50:100, 1], color='blue', marker='s', label='Versicolor')
+# plt.xlabel('Sepal length [cm]')
+# plt.ylabel('Petal length [cm]')
+# plt.legend(loc='upper left')
+
 # fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 4))
+
+
 # Creating the first adaline instance with lr = 0.1 
 # ada1 = AdalineGD(n_iter=15, eta=0.1).fit(X, y)
 
