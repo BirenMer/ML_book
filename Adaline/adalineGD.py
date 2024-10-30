@@ -28,6 +28,7 @@ class AdalineGD:
         self.random_state=random_state
 
     def fit(self,X,y):
+
         """
         Fit Trainig data
         Parameters
@@ -51,22 +52,23 @@ class AdalineGD:
 
         for i in range(self.n_iter):
             net_input=self.net_input(X)
+            #Calling the activation function
             output=self.activation(net_input)
+
             errors=(y-output)
+            #Calculate the gradient based on the whole training dataset
             self.w_+=self.eta*2.0*X.T.dot(errors)/X.shape[0]
             self.b_+=self.eta*2.0*errors.mean()
             loss=(errors**2).mean()
             self.losses_.append(loss)
         return self
+    
     def net_input(self,X):
-        """Calculate net input"""
+        """Calculate net input."""
         return np.dot(X,self.w_) + self.b_
     def activation(self,X):
-        """Compute linear actication"""
+        """Compute linear activation"""
         return X
     def predict(self,X):
         """Return class label after unit step"""
         return np.where(self.activation(self.net_input(X))>=0.5,1,0)
-        
-
-    
