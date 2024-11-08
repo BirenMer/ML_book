@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
-from Adaline.adalineSGD import AdalineSGD
+from adalineSGD import AdalineSGD
 
 import os
 import pandas as pd
@@ -32,7 +32,7 @@ X_std[:,0] = (X[:,0] - X[:,0].mean()) / X[:,0].std()
 X_std[:,1] = (X[:,1] - X[:,1].mean()) / X[:,1].std()
 
 
-ada_sgd = AdalineSGD(n_iter=15, eta=0.01, random_state=1)
+ada_sgd = AdalineSGD(n_iter=20, eta=0.01, random_state=1)
 ada_sgd.fit(X_std, y)
 plot_decision_regions(X_std, y, classifier=ada_sgd)
 plt.title('Adaline - Stochastic gradient descent')
