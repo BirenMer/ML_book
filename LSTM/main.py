@@ -22,3 +22,13 @@ plt.show()
 
 lstm=LSTM(n_neurons=200)
 lstm.forward(X_t)
+
+#Creating a plot to see the code working CKP-1
+for h in lstm.H:
+    plt.plot(np.arange(20),h[0:20],'k-',linewidth=1,alpha=0.05)
+
+
+for c in lstm.C:
+    plt.plot(np.arange(20),h[0:20],'k-',linewidth=1,alpha=0.05)
+# plt.show()
+
