@@ -129,7 +129,7 @@ class LSTM:
             # Coding the equation for forget gate
             outf=np.dot(self.Uf,xt)+np.dot(self.Wf,ht)+self.bf
             Sigmf[t].forward(outf)
-            ft=Sigmf[t].output
+            ft=Sigmf[t].output 
 
             #Coding the equation for input gate
             outi=np.dot(self.Ui,xt)+np.dot(self.Wi,ht)+self.bi
@@ -164,3 +164,99 @@ class LSTM:
             O[t]=ot
 
         return (H,C,Sigmf,Sigmi,Sigmo,Tanh1,Tanh2,F,I,O,C_tilde)
+    
+    #Implementing back prop thorugh time
+    def backward(self,dvalues):
+        
+        T=self.T
+        H=self.H
+        C=self.C
+
+        #information fromt the gates
+        O=self.O
+        I=self.I
+        C_tilde=self.C_tilde
+        
+
+        X_t=self.X_t
+        
+        #activation functions
+        Sigmf=self.Sigmf
+        Sigmi=self.Sigmi
+        Sigmo=self.Sigmo
+        Tanh1=self.Tanh1
+        Tanh2=self.Tanh2
+
+        #Dht is the inputs from the dense layer
+        # inital value from BPTT which comes from the last eleement of the dense layer 
+        dht=dvalues[-1,:].reshape(self.n_neurons,1)
+
+        for t in reversed(range(T)):
+            xt=X_t[t].reshape(1,1)
+            
+            # We calculate dht at the end of the loop.
+            Tanh2[t].backward(dht)
+            dtanh2=Tanh2[t].dinputs
+
+            #multiplication in the forward part
+            #np.multiply, not np.dot because it is element wise 
+            dhtdtanh=np.multiply(O[t],dtanh2)
+
+            #adding derivativers of the gates
+            dctdft=np.multiply(dhtdtanh,C[t-1])
+            dctdit=np.multiply(dhtdtanh,C_tilde[t])
+            dctdct_tilde=np.multiply(dhtdtanh,I[t])
+
+            #adding derivativers of the activation function
+            Tanh1[t].backward(dctdct_tilde)
+            dtanh1=Tanh1[t].dinputs
+
+            Sigmf[t].backwards(dctdft)
+            dsigmf=Sigmf[t].dinputs
+
+            Sigmi[t].backward(dctdit)
+            dsigmi=Sigmi[t].dinputs
+
+            Sigmo[t].backward(np.multiply(dht,Tanh2[t].output))
+            dsigmo=Sigmo[t].dinputs
+
+            #Calculating the derivatives of all the learnables for all the gates
+            
+            # Forget gate
+            dsigmfdUf=np.dot(dsigmf,xt)
+            dsigmfdWf=np.dot(dsigmf,H[t-1].T)
+
+            self.dUf+=dsigmfdUf
+            self.dWf+=dsigmfdWf
+            self.dbf+=dsigmf
+
+            #input gate
+            dsigmidUi=np.dot(dsigmi,xt)
+            dsigmidWi=np.dot(dsigmi,H[t-1].T)
+            
+            self.dUi+=dsigmidUi
+            self.dWi+=dsigmidWi
+            self.dbi+=dsigmi
+
+            #output gate
+            dsigmodUo=np.dot(dsigmo,xt)
+            dsigmodWo=np.dot(dsigmo,H[t-1].T)
+
+            self.dUo+=dsigmodUo
+            self.dWo+=dsigmodWo
+            self.bo=dsigmo
+
+            #c_tiled
+            dtanh1dUg=np.dot(dtanh1,xt)
+            dtanh1dWg=np.dot(dtanh1,H[t-1].T)
+
+            self.dUg+=dtanh1dUg
+            self.dWg+=dtanh1dWg
+            self.dbg+=dtanh1
+
+
+            #Re-calculate dht after every step
+            dht=np.dot(self.Wf,dsigmf) + np.dot(self.Wi,dsigmi) + np.dot(self.Wo,dsigmo) + np.dot(self.Wg,dtanh1)+dvalues[t-1,:].reshape(self.n_neurons,1)
+
+        self.H=H
+        
