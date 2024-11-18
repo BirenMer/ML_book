@@ -19,8 +19,8 @@ Y_t = np.sin(X_t)+0.1*np.random.randn(len(X_t),1)+np.exp((0.5*X_t+20)*0.05)
 plt.plot(X_t,Y_t)
 
 plt.show()
-
-lstm=LSTM(n_neurons=200)
+n_neurons=200
+lstm=LSTM(n_neurons)
 lstm.forward(X_t)
 
 #Creating a plot to see the code working CKP-1
