@@ -211,7 +211,7 @@ class LSTM:
             Tanh1[t].backward(dctdct_tilde)
             dtanh1=Tanh1[t].dinputs
 
-            Sigmf[t].backwards(dctdft)
+            Sigmf[t].backward(dctdft)
             dsigmf=Sigmf[t].dinputs
 
             Sigmi[t].backward(dctdit)
