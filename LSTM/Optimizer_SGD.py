@@ -1,7 +1,7 @@
 import numpy as np
 
 class OptimizerSGDLSTM:
-    def __init__(self,learning_rate=1,decay=0,momentum=0) -> None:
+    def __init__(self,learning_rate=1e-5,decay=0,momentum=0) -> None:
         self.learning_rate=learning_rate
         self.current_learning_rate=learning_rate
         self.decay=decay
@@ -127,7 +127,7 @@ class OptimizerSGD:
 
             else:
                 weight_updates=-self.current_learning_rate*layer.dweights
-                bias_updates=-self.current_learning_rate*layer.dbaises
+                bias_updates=-self.current_learning_rate*layer.dbiases
             layer.weights+=weight_updates
             layer.biases+=bias_updates
         
