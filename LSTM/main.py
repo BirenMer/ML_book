@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from LSTM import LSTM
 from dense_layer import DenseLayer
-
+from Optimizer_SGD import OptimizerSGD, OptimizerSGDLSTM
 #Creating data 
 
 X_t=np.arange(-70,10,0.1)
@@ -27,7 +27,6 @@ n_epoch=100
 
 
 lstm=LSTM(n_neurons)
-lstm.forward(X_t)
 
 #Creating a plot to see the code working CKP-1
 # for h in lstm.H:
@@ -48,6 +47,12 @@ dense1=DenseLayer(n_neurons,T)
 # Setting up second dense layer which can convert the inpput into prediction Y hat
 dense2=DenseLayer(T,1)
 
+#setting up optimizer for lstm
+optimizer_lstm=OptimizerSGDLSTM()
+
+#setting up optimizer for dense layer
+optimizer=OptimizerSGD()
+
 Monitor=np.zeros((100))
 
 for n in range(n_epoch):
@@ -63,8 +68,10 @@ for n in range(n_epoch):
     dY=Y_hat-Y_t
     
     # L=float(0.5*np.dot(dY.T,dY)/T) #Depricated 
-    #FIX  Explanation:
+    
+    # FIX  Explanation:
     # np.dot(dY.T, dY).item() extracts the scalar value from the (1, 1) array resulting from the dot product.
+
     # This ensures the computation proceeds as intended without warnings.
     L = float(0.5 * np.dot(dY.T, dY).item() / T)
 
@@ -74,27 +81,20 @@ for n in range(n_epoch):
     dense2.backward(dY)
     dense1.backward(dense2.dinputs)
     lstm.backward(dense1.dinputs)
+    #adding optimizer
+    optimizer_lstm.pre_update_params()
+    optimizer.pre_update_params()
 
-    dense1.weights-=lr*dense1.dweights
-    dense2.weights-=lr*dense2.dweights
+    #this will look for layer.dwights and layer.dbiases and will update the same
+    optimizer.update_params(dense1)
+    optimizer.update_params(dense2)
 
-    dense1.biases-=lr*dense1.dbiases
-    dense2.biases-=lr*dense2.dbiases
+    #donign the same for lstm
+    optimizer_lstm.update_params(lstm)
 
-    lstm.Uf-=lr*lstm.dUf
-    lstm.Ui-=lr*lstm.dUi
-    lstm.Uo-=lr*lstm.dUo
-    lstm.Ug-=lr*lstm.dUg
+    optimizer_lstm.post_update_params()
+    optimizer.post_update_params()
 
-    lstm.Wf-=lr*lstm.dWf
-    lstm.Wi-=lr*lstm.dWi
-    lstm.Wo-=lr*lstm.dWo
-    lstm.Wg-=lr*lstm.dWg
-
-    lstm.bf-=lr*lstm.dbf
-    lstm.bi-=lr*lstm.dbi
-    lstm.bo-=lr*lstm.dbo
-    lstm.bg-=lr*lstm.dbg
     print(f"Epoch {n} and Current MSE Loss = {L:0.3f}")
 plt.plot(range(n_epoch),Monitor)
 plt.xlabel('epochs')
