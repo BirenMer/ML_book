@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from LSTM.run_LSTM import ApplyMyLSTM, RunMyLSTM
+from run_LSTM import ApplyMyLSTM, RunMyLSTM
 
 #X_t = np.arange(-170,170,0.1)
 X_t = np.arange(-70,10,0.1)
