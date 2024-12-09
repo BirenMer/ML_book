@@ -5,7 +5,7 @@ import random
 from LSTM import LSTM 
 from Sigmoid import Sigmoid
 from Tanh import Tanh 
-from LSTM.Optimizers import OptimizerSGD, OptimizerSGDLSTM
+from Optimizers import OptimizerSGD, OptimizerSGDLSTM
 from dense_layer import DenseLayer
 
 
