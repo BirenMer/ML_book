@@ -22,7 +22,7 @@ from LSTM import *
 
 dt   = 200#phase shift for prediction
 [lstm, dense1, dense2] = RunMyLSTM(Y_t, Y_t, n_neurons = 300,\
-                                   n_epoch = 200, plot_each = 10, dt = dt,\
+                                   n_epoch = 1000, plot_each = 100, dt = dt,\
                                    momentum = 0.8, decay = 0.01,\
                                    learning_rate = 1e-5)
 
