@@ -3,10 +3,14 @@ import matplotlib.pyplot as plt
 import random
 
 from LSTM import LSTM 
-from Sigmoid import Sigmoid
-from Tanh import Tanh 
-from Optimizers import OptimizerSGD, OptimizerSGDLSTM
-from dense_layer import DenseLayer
+
+from activation_function.Sigmoid import Sigmoid
+from activation_function.Tanh import Tanh 
+
+from optimizers.optimizerSGD import OptimizerSGD
+from optimizers.optimizerSGDLSTM import OptimizerSGDLSTM
+
+from layers.dense_layer import DenseLayer
 
 
 def RunMyLSTM(X_t, Y_t, n_epoch = 500, n_neurons = 500,\

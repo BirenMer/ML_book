@@ -1,6 +1,7 @@
 import numpy as np
-from Tanh import Tanh
-from Sigmoid import Sigmoid
+from activation_function.Tanh import Tanh
+from activation_function.Sigmoid import Sigmoid
+
 
 
 class LSTM:

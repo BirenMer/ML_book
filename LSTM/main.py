@@ -34,5 +34,5 @@ X_plot_hat = np.arange(0,len(Y_hat)) + dt
 
 plt.plot(X_plot, Y_t)
 plt.plot(X_plot_hat, Y_hat)
-plt.legend(['y', '$\hat{y}$'])
+plt.legend(['y', '$hat{y}$'])
 plt.show()
