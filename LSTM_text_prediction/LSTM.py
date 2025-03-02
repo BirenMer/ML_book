@@ -2,263 +2,137 @@ import numpy as np
 from activation_function.Tanh import Tanh
 from activation_function.Sigmoid import Sigmoid
 
-
-
 class LSTM:
-    def __init__(self, n_neurons) -> None:
-        # input is number of neurons / number of stats
+    def __init__(self, n_neurons, n_features):
         self.n_neurons = n_neurons
+        self.n_features = n_features
 
-        # Defining forget gate
-        self.Uf = 0.1 * np.random.randn(
-            n_neurons, 1
-        )  # Size of Uf We can change 1 if we want to have more the on feature lstm
-        self.bf = 0.1 * np.random.randn(n_neurons, 1)  # Bias for Forget Gate
-        self.Wf = 0.1 * np.random.randn(n_neurons, n_neurons)  # Weight for Forget Gate
-
-        # Defining input gate
-        self.Ui = 0.1 * np.random.randn(n_neurons, 1)
-        self.bi = 0.1 * np.random.randn(n_neurons, 1)
-        self.Wi = 0.1 * np.random.randn(n_neurons, n_neurons)
-
-        # Defining output gate
-        self.Uo = 0.1 * np.random.randn(n_neurons, 1)
-        self.bo = 0.1 * np.random.randn(n_neurons, 1)
-        self.Wo = 0.1 * np.random.randn(n_neurons, n_neurons)
-
-        # Defining the c tilde (or c dash)
-        self.Ug = 0.1 * np.random.randn(n_neurons, 1)
-        self.bg = 0.1 * np.random.randn(n_neurons, 1)
-        self.Wg = 0.1 * np.random.randn(n_neurons, n_neurons)
-
-    # defining the forward pass function
-    def forward(self, X_t):
-        T = max(X_t.shape)
-
-        self.T = T
-        self.X_t = X_t
-
-        n_neurons = self.n_neurons
-
-        # We are doing this as we would like to keep track of H,C and C_tilde as well as forget gate, input gate and output gate
-        self.H = [
-            np.zeros((n_neurons, 1)) for t in range(T + 1)
-        ]  # Adding values from the first timestamp to the last time stamp
-        self.C = [np.zeros((n_neurons, 1)) for t in range(T + 1)]
-        self.C_tilde = [
-            np.zeros((n_neurons, 1)) for t in range(T)
-        ]  # last -1 time stamp
-
-        # This part is helpful for debugging we really don't need this in code
-        self.F = [np.zeros((n_neurons, 1)) for t in range(T)]
-        self.I = [np.zeros((n_neurons, 1)) for t in range(T)]
-        self.O = [np.zeros((n_neurons, 1)) for t in range(T)]
-
-        # Now for the gates we would like to change the values of the learnable with our optimizers so we define them with d as prefix
-        # Forget Gate
-        self.dUf = 0.1 * np.random.randn(n_neurons, 1)
-        self.dbf = 0.1 * np.random.randn(n_neurons, 1)
-        self.dWf = 0.1 * np.random.randn(n_neurons, n_neurons)
-
-        # input Gate
-        self.dUi = 0.1 * np.random.randn(n_neurons, 1)
-        self.dbi = 0.1 * np.random.randn(n_neurons, 1)
-        self.dWi = 0.1 * np.random.randn(n_neurons, n_neurons)
-
-        # output Gate
-        self.dUo = 0.1 * np.random.randn(n_neurons, 1)
-        self.dbo = 0.1 * np.random.randn(n_neurons, 1)
-        self.dWo = 0.1 * np.random.randn(n_neurons, n_neurons)
-
-        # c_tilde
-        self.dUg = 0.1 * np.random.randn(n_neurons, 1)
-        self.dbg = 0.1 * np.random.randn(n_neurons, 1)
-        self.dWg = 0.1 * np.random.randn(n_neurons, n_neurons)
-
-        # For every timestamp we create an output and then we want to run back propogation through time
-
-        # Now we initializing all the matrices for the backprop function
-        # We still need to define activations function like sigmoid and tanh
-        Sigmf = [Sigmoid() for i in range(T)]
-        Sigmi = [Sigmoid() for i in range(T)]
-        Sigmo = [Sigmoid() for i in range(T)]
-
-        Tanh1 = [Tanh() for i in range(T)]
-        Tanh2 = [Tanh() for i in range(T)]
-
-        ht = self.H[0]  # 0th time stamp
-        ct = self.C[0]  # 0th time stamp
-
-        # Creating the LSTM CELL
-        [H, C, Sigmf, Sigmi, Sigmo, Tanh1, Tanh2, F, I, O, C_tilde] = self.LSTMCell(
-            X_t,
-            ht,
-            ct,
-            Sigmf,
-            Sigmi,
-            Sigmo,
-            Tanh1,
-            Tanh2,
-            self.H,
-            self.C,
-            self.F,
-            self.O,
-            self.I,
-            self.C_tilde,
-        )
-
-        self.F = F
-        self.O = O
-        self.I = I
-        self.C_tilde = C_tilde
-
-        self.H = H
-        self.C = C
-
-        self.Sigmf = Sigmf
-        self.Sigmi = Sigmi
-        self.Sigmo = Sigmo
-
-        self.Tanh1 = Tanh1
-        self.Tanh2 = Tanh2
-
-    def LSTMCell(
-        self, X_t, ht, ct, Sigmf, Sigmi, Sigmo, Tanh1, Tanh2, H, C, F, O, I, C_tilde
-    ):
-        for t,xt in enumerate(X_t):
-            # print()
-            xt=xt.reshape(xt.shape[0],1)
-            # Coding the equation for forget gate
-            outf=np.dot(self.Uf,xt)+np.dot(self.Wf,ht)+self.bf
-            Sigmf[t].forward(outf)
-            ft=Sigmf[t].output 
-
-            #Coding the equation for input gate
-            outi=np.dot(self.Ui,xt)+np.dot(self.Wi,ht)+self.bi
-            Sigmi[t].forward(outi)
-            it=Sigmi[t].output
-
-            #Coding the equation for output gate
-            outo=np.dot(self.Uo,xt)+np.dot(self.Wo,ht)+self.bo
-            Sigmo[t].forward(outo)
-            ot=Sigmo[t].output
-
-            #Coding the equation for C_tilde
-            outct_tilde=np.dot(self.Ug,xt)+np.dot(self.Wg,ht)+self.bg
-            Tanh1[t].forward(outct_tilde)
-            ct_tilde=Tanh1[t].output
-
-            #Combining the infromation from the input gat and forget gate with c_tilde
-            #using multiply as it is an element wise operation
-            ct=np.multiply(ft,ct)+np.multiply(it,ct_tilde)
-
-            #passing it to our second tanh activation function
-            Tanh2[t].forward(ct)
-            ht=np.multiply(Tanh2[t].output,ot)
-
-            #storing the outputs
-            H[t+1]=ht
-            C[t+1]=ct
-            C_tilde[t]=ct_tilde
-
-            F[t]=ft
-            I[t]=it
-            O[t]=ot
-
-        return (H,C,Sigmf,Sigmi,Sigmo,Tanh1,Tanh2,F,I,O,C_tilde)
-    
-    #Implementing back prop thorugh time
-    def backward(self,dvalues):
+        # Initialize weights with Xavier/Glorot initialization
+        scale = np.sqrt(2.0 / (n_features + n_neurons))
         
-        T=self.T
-        H=self.H
-        C=self.C
+        # Forget gate parameters
+        self.Uf = np.random.randn(n_neurons, n_features) * scale
+        self.Wf = np.random.randn(n_neurons, n_neurons) * scale
+        self.bf = np.zeros((n_neurons, 1))
 
-        #information fromt the gates
-        O=self.O
-        I=self.I
-        C_tilde=self.C_tilde
+        # Input gate parameters
+        self.Ui = np.random.randn(n_neurons, n_features) * scale
+        self.Wi = np.random.randn(n_neurons, n_neurons) * scale
+        self.bi = np.zeros((n_neurons, 1))
+
+        # Output gate parameters
+        self.Uo = np.random.randn(n_neurons, n_features) * scale
+        self.Wo = np.random.randn(n_neurons, n_neurons) * scale
+        self.bo = np.zeros((n_neurons, 1))
+
+        # Cell candidate parameters
+        self.Ug = np.random.randn(n_neurons, n_features) * scale
+        self.Wg = np.random.randn(n_neurons, n_neurons) * scale
+        self.bg = np.zeros((n_neurons, 1))
+
+    def lstm_cell(self, xt, ht_prev, ct_prev):
+        # Initialize activation functions
+        sigmoid = Sigmoid()
+        tanh = Tanh()
         
-
-        X_t=self.X_t
+        # Compute gates
+        ft = sigmoid.forward(np.dot(self.Uf, xt) + np.dot(self.Wf, ht_prev) + self.bf)
+        it = sigmoid.forward(np.dot(self.Ui, xt) + np.dot(self.Wi, ht_prev) + self.bi)
+        ot = sigmoid.forward(np.dot(self.Uo, xt) + np.dot(self.Wo, ht_prev) + self.bo)
         
-        #activation functions
-        Sigmf=self.Sigmf
-        Sigmi=self.Sigmi
-        Sigmo=self.Sigmo
-        Tanh1=self.Tanh1
-        Tanh2=self.Tanh2
+        # Compute cell candidate
+        c_tilde = tanh.forward(np.dot(self.Ug, xt) + np.dot(self.Wg, ht_prev) + self.bg)
+        
+        # Update cell state
+        # print(f"ft: {ft}, ct_prev: {ct_prev}, c_tilde: {c_tilde}")
+        ct = ft * ct_prev + it * c_tilde
+        
+        # Compute hidden state
+        ht = ot * tanh.forward(ct)
+        
+        return ht, ct, c_tilde, ft, it, ot
 
-        #Dht is the inputs from the dense layer
-        # inital value from BPTT which comes from the last eleement of the dense layer 
-        dht=dvalues[-1,:].reshape(self.n_neurons,1)
+    def forward(self, X):
+        batch_size, seq_length, n_features = X.shape
+        
+        if n_features != self.n_features:
+            raise ValueError(f"Input feature size {n_features} does not match expected size {self.n_features}")
 
-        for t in reversed(range(T)):
-            xt=X_t[t].reshape(1,1)
+        # Initialize states
+        self.H = np.zeros((batch_size, seq_length + 1, self.n_neurons))
+        self.C = np.zeros((batch_size, seq_length + 1, self.n_neurons))
+        self.gates = {
+            'C_tilde': np.zeros((batch_size, seq_length, self.n_neurons)),
+            'F': np.zeros((batch_size, seq_length, self.n_neurons)),
+            'I': np.zeros((batch_size, seq_length, self.n_neurons)),
+            'O': np.zeros((batch_size, seq_length, self.n_neurons))
+        }
+        
+        # Store input for backprop
+        self.X = X
+        
+        # Process each timestep
+        for t in range(seq_length):
+            for b in range(batch_size):
+                xt = X[b, t].reshape(-1, 1)
+                ht_prev = self.H[b, t].reshape(-1, 1)
+                ct_prev = self.C[b, t].reshape(-1, 1)
+                
+                ht, ct, c_tilde, ft, it, ot = self.lstm_cell(xt, ht_prev, ct_prev)
+                
+                self.H[b, t + 1] = ht.reshape(-1)
+                self.C[b, t + 1] = ct.reshape(-1)
+                self.gates['C_tilde'][b, t] = c_tilde.reshape(-1)
+                self.gates['F'][b, t] = ft.reshape(-1)
+                self.gates['I'][b, t] = it.reshape(-1)
+                self.gates['O'][b, t] = ot.reshape(-1)
+        
+        return self.H[:, 1:]  # Return all hidden states except initial state
+
+    def backward(self, dH):
+        batch_size, seq_length, _ = dH.shape
+        dUf, dWf, dbf = np.zeros_like(self.Uf), np.zeros_like(self.Wf), np.zeros_like(self.bf)
+        dUi, dWi, dbi = np.zeros_like(self.Ui), np.zeros_like(self.Wi), np.zeros_like(self.bi)
+        dUo, dWo, dbo = np.zeros_like(self.Uo), np.zeros_like(self.Wo), np.zeros_like(self.bo)
+        dUg, dWg, dbg = np.zeros_like(self.Ug), np.zeros_like(self.Wg), np.zeros_like(self.bg)
+        
+        for b in range(batch_size):
+            delta_h = np.zeros((self.n_neurons, 1))
+            delta_c = np.zeros((self.n_neurons, 1))
+            for t in reversed(range(seq_length)):
+                xt = self.X[b, t].reshape(-1, 1)
+                ht_prev = self.H[b, t].reshape(-1, 1)
+                ft = self.gates['F'][b, t].reshape(-1, 1)
+                it = self.gates['I'][b, t].reshape(-1, 1)
+                ot = self.gates['O'][b, t].reshape(-1, 1)
+                c_tilde = self.gates['C_tilde'][b, t].reshape(-1, 1)
+                ct = self.C[b, t+1].reshape(-1, 1)
+                ct_prev = self.C[b, t].reshape(-1, 1)
+
+                dht = dH[b, t].reshape(-1, 1) + delta_h
+                tanh = Tanh()
+                dct = delta_c + dht * ot * tanh.backward(tanh.forward(ct))
+                
+                dot = (dht * tanh.forward(ct) + dct * c_tilde) * (ot * (1 - ot))
+                dit = dct * c_tilde * (it * (1 - it))
+                dft = dct * ct_prev * (ft * (1 - ft))
+                dc_tilde = dct * it * (1 - c_tilde**2)
+                
+                # Compute gradients and accumulate
+                dUf += np.dot(dft, xt.T)
+                dWf += np.dot(dft, ht_prev.T)
+                dbf += dft.sum(axis=0).reshape(-1,1)
+                
+                delta_h = (np.dot(self.Wf.T, dft) 
+                        + np.dot(self.Wi.T, dit) 
+                        + np.dot(self.Wo.T, dot)
+                        + np.dot(self.Wg.T, dc_tilde))
+                
+                delta_c = dct * ft
             
-            # We calculate dht at the end of the loop.
-            Tanh2[t].backward(dht)
-            dtanh2=Tanh2[t].dinputs
-
-            #multiplication in the forward part
-            #np.multiply, not np.dot because it is element wise 
-            dhtdtanh=np.multiply(O[t],dtanh2)
-
-            #adding derivativers of the gates
-            dctdft=np.multiply(dhtdtanh,C[t-1])
-            dctdit=np.multiply(dhtdtanh,C_tilde[t])
-            dctdct_tilde=np.multiply(dhtdtanh,I[t])
-
-            #adding derivativers of the activation function
-            Tanh1[t].backward(dctdct_tilde)
-            dtanh1=Tanh1[t].dinputs
-
-            Sigmf[t].backward(dctdft)
-            dsigmf=Sigmf[t].dinputs
-
-            Sigmi[t].backward(dctdit)
-            dsigmi=Sigmi[t].dinputs
-
-            Sigmo[t].backward(np.multiply(dht,Tanh2[t].output))
-            dsigmo=Sigmo[t].dinputs
-
-            #Calculating the derivatives of all the learnables for all the gates
-            
-            # Forget gate
-            dsigmfdUf=np.dot(dsigmf,xt)
-            dsigmfdWf=np.dot(dsigmf,H[t-1].T)
-
-            self.dUf+=dsigmfdUf
-            self.dWf+=dsigmfdWf
-            self.dbf+=dsigmf
-
-            #input gate
-            dsigmidUi=np.dot(dsigmi,xt)
-            dsigmidWi=np.dot(dsigmi,H[t-1].T)
-            
-            self.dUi+=dsigmidUi
-            self.dWi+=dsigmidWi
-            self.dbi+=dsigmi
-
-            #output gate
-            dsigmodUo=np.dot(dsigmo,xt)
-            dsigmodWo=np.dot(dsigmo,H[t-1].T)
-
-            self.dUo+=dsigmodUo
-            self.dWo+=dsigmodWo
-            self.bo=dsigmo
-
-            #c_tiled
-            dtanh1dUg=np.dot(dtanh1,xt)
-            dtanh1dWg=np.dot(dtanh1,H[t-1].T)
-
-            self.dUg+=dtanh1dUg
-            self.dWg+=dtanh1dWg
-            self.dbg+=dtanh1
-
-
-            #Re-calculate dht after every step
-            dht=np.dot(self.Wf,dsigmf) + np.dot(self.Wi,dsigmi) + np.dot(self.Wo,dsigmo) + np.dot(self.Wg,dtanh1)+dvalues[t-1,:].reshape(self.n_neurons,1)
-
-        self.H=H
-        
+        self.gradients = {
+            'Uf': dUf, 'Wf': dWf, 'bf': dbf,
+            'Ui': dUi, 'Wi': dWi, 'bi': dbi,
+            'Uo': dUo, 'Wo': dWo, 'bo': dbo,
+            'Ug': dUg, 'Wg': dWg, 'bg': dbg
+        }
