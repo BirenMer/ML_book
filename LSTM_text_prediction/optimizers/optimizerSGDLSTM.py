@@ -70,32 +70,32 @@ class OptimizerSGDLSTM:
 
             else:
 
-                Uf_updates =- self.current_learning_rate*layer.dUf
-                Ui_updates =- self.current_learning_rate*layer.dUi
-                Uo_updates =- self.current_learning_rate*layer.dUo
-                Ug_updates =- self.current_learning_rate*layer.dUg
-                Wf_updates =- self.current_learning_rate*layer.dWf
-                Wi_updates =- self.current_learning_rate*layer.dWi
-                Wo_updates =- self.current_learning_rate*layer.dWo
-                Wg_updates =- self.current_learning_rate*layer.dWg    
-                bf_updates =- self.current_learning_rate*layer.dbf
-                bi_updates =- self.current_learning_rate*layer.dbi
-                bo_updates =- self.current_learning_rate*layer.dbo
-                bg_updates =- self.current_learning_rate*layer.dbg
+                Uf_updates =- self.current_learning_rate*layer.Uf
+                Ui_updates =- self.current_learning_rate*layer.Ui
+                Uo_updates =- self.current_learning_rate*layer.Uo
+                Ug_updates =- self.current_learning_rate*layer.Ug
+                Wf_updates =- self.current_learning_rate*layer.Wf
+                Wi_updates =- self.current_learning_rate*layer.Wi
+                Wo_updates =- self.current_learning_rate*layer.Wo
+                Wg_updates =- self.current_learning_rate*layer.Wg    
+                bf_updates =- self.current_learning_rate*layer.bf
+                bi_updates =- self.current_learning_rate*layer.bi
+                bo_updates =- self.current_learning_rate*layer.bo
+                bg_updates =- self.current_learning_rate*layer.bg
 
                
-            layer.dUf += Uf_updates
-            layer.dUi += Ui_updates
-            layer.dUo += Uo_updates
-            layer.dUg += Ug_updates
-            layer.dWf += Wf_updates
-            layer.dWi += Wi_updates
-            layer.dWo += Wo_updates
-            layer.dWg += Wg_updates   
-            layer.dbf += bf_updates
-            layer.dbi += bi_updates
-            layer.dbo += bo_updates
-            layer.dbg += bg_updates
+            layer.Uf += Uf_updates
+            layer.Ui += Ui_updates
+            layer.Uo += Uo_updates
+            layer.Ug += Ug_updates
+            layer.Wf += Wf_updates
+            layer.Wi += Wi_updates
+            layer.Wo += Wo_updates
+            layer.Wg += Wg_updates   
+            layer.bf += bf_updates
+            layer.bi += bi_updates
+            layer.bo += bo_updates
+            layer.bg += bg_updates
 
     def post_update_params(self):
         self.iterations+=1
