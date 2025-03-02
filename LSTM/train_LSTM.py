@@ -13,7 +13,7 @@ from optimizers.optimizerSGDLSTM import OptimizerSGDLSTM
 from layers.dense_layer import DenseLayer
 
 
-def RunMyLSTM(X_t, Y_t, n_epoch = 500, n_neurons = 500,\
+def train_LSTM(X_t, Y_t, n_epoch = 500, n_neurons = 500,\
              learning_rate = 1e-5, decay = 0, momentum = 0.95, plot_each = 50,\
              dt = 0):
 

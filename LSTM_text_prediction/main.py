@@ -3,7 +3,7 @@ import pickle
 from data_preparation_utils import prepare_text_data
 from model_utils import load_model, save_model
 from prediction_function import generate_text
-from run_LSTM import  RunMyLSTM
+from LSTM_text_prediction.train_LSTM import  train_LSTM
 
 
 def main(file_path, seq_length=100, n_neurons=256, n_epoch=2, batch_size=1024, model_path="saved_model"):
@@ -20,7 +20,7 @@ def main(file_path, seq_length=100, n_neurons=256, n_epoch=2, batch_size=1024, m
     
     X, Y, char_to_idx, idx_to_char = prepare_text_data(text, seq_length)
     
-    lstm, dense_layers, _, _ = RunMyLSTM(
+    lstm, dense_layers, _, _ = train_LSTM(
         X, Y,
         vocab_size=len(char_to_idx),
         char_to_idx=char_to_idx,

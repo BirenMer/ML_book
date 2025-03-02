@@ -7,7 +7,7 @@ from optimizers.optimizerSGD import OptimizerSGD
 from optimizers.optimizerSGDLSTM import OptimizerSGDLSTM
 from layers.dense_layer import DenseLayer
 
-def RunMyLSTM(X, Y, vocab_size, char_to_idx, idx_to_char, n_epoch=500, n_neurons=500, learning_rate=1e-5, 
+def train_LSTM(X, Y, vocab_size, char_to_idx, idx_to_char, n_epoch=500, n_neurons=500, learning_rate=1e-5, 
               decay=0, momentum=0, batch_size=1024):
     # Initialize models
     lstm = LSTM(n_neurons=n_neurons, n_features=vocab_size)
