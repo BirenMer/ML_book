@@ -2,8 +2,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from run_LSTM import ApplyMyLSTM, RunMyLSTM
+from train_LSTM import ApplyMyLSTM, RunMyLSTM
 
+#Below is the code to visualize  training data
 #X_t = np.arange(-170,170,0.1)
 X_t = np.arange(-70,10,0.1)
 #X_t = np.arange(-10,10,0.1)
