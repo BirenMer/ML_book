@@ -44,7 +44,7 @@ def main(file_path, seq_length=100, n_neurons=256, n_epoch=2, batch_size=1024, m
 if __name__ == "__main__":
     try:
         lstm, dense_layers, char_to_idx, idx_to_char = main(
-            "/home/wifee/workspace/learning/ML_book/LSTM_text_prediction/Mobi_dick_book.txt"
+            ""
         )
 
         seed_text = "Here they saw such huge troops of whales,".lower()
