@@ -5,7 +5,7 @@ import logging
 from data_preparation_utils import prepare_text_data
 from model_utils import load_model, save_model
 from prediction_function import generate_text
-from LSTM_text_prediction.train_LSTM import train_LSTM
+from train_LSTM import train_LSTM
 
 # Configure logging to capture outputs
 logging.basicConfig(filename="training.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
