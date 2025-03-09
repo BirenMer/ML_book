@@ -46,4 +46,5 @@ def do_mini_batch_gragient_descent():
             #updating parameters after we have seen a batch of parameters (unlike stochastic GD i.e. insted of updating them at each and evey data point )
                 w=w-eta*dw
                 b=b-eta*db
+                dw,db=0,0 #reset gradients
         # print(w,b)
