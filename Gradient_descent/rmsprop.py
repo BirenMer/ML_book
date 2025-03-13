@@ -33,6 +33,7 @@ def grad_w(w,b,x,y):
 def do_rmsprop(init_w,init_b,max_epochs):
     w,b,eta=init_w,init_b,0.1
     v_w,v_b,eps,beta1=0,0,1e-8,0.9
+    #Here the beta1 makes sure that we are less aggressive on the updates
     for i in range(max_epochs):
         dw,db=0,0
         for x,y in zip(X,Y):
