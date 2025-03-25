@@ -1,6 +1,8 @@
 import math
 import numpy as np
-#datapoints
+
+#datapoints (Need dataset with 1000 points and need at lest 80% as 0 only X points)
+
 X=[0.5,2.5]
 Y=[0.2,0.0]
 
