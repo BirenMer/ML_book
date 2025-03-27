@@ -21,7 +21,7 @@ def plot_error_contour(error_function,trajectory,algo_name):
     plt.colorbar(contour, label="Error Value")
     
     # Plot gradient descent trajectory
-    plt.plot(w_traj, b_traj, 'o-', color="black", markersize=4, label="Gradient Descent Path")
+    plt.plot(w_traj, b_traj, 'o-', color="black", markersize=4, label="Convergence Path")
 
     plt.xlabel("w", fontsize=14, color="red")
     plt.ylabel("b", fontsize=14, color="red")
