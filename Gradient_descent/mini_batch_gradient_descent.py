@@ -1,50 +1,36 @@
-#WIP code
 import numpy as np
-#Sigmoid function f(x)
+from trajectory_plotting_utils import plot_contour
+from general_utils import data_points, error, grad_w,grad_b
 
-#datapoints
-X=[0.5,2.5]
-Y=[0.2,0.0]
-
-
-def f(w,b,x):
-    return 1.0/(1.0 * np.exp(-(w*x+b)))
-
-
-#Error function
-def error(w,b):
-    err=0.0
-    for x,y in zip(X,Y):
-        fx=f(w,b,x)
-        err+=0.5*(fx-y)**2
-    return err
-
-
-def grad_b(w,b,x,y):
-    fx=f(w,b,x)
-    return (fx-y) * (fx) * (1-fx)
-
-def grad_w(w,b,x,y):
-    fx=f(w,b,x)
-    return (fx-y) * (fx) * (1-fx) * x
-
-#this code updates the parameters at evey point,
-def do_mini_batch_gragient_descent():
+def do_mini_batch_gradient_descent(lr=0.1, max_epochs=1000, mini_batch_size=2):
+    w, b = -2, 2
+    eta = lr
+    X, Y = data_points()
+    trajectory = [(w, b)]
     
-    w,b,eta,max_epochs=-2,-2,1.0,1000
-    mini_batch_size,num_points_seen=2,0
-    
-    for i in range(max_epochs):
-        dw,db,num_points=0,0,0
+    for epoch in range(max_epochs):
+        dw, db, num_points_seen = 0, 0, 0
         
-        for x,y in zip(X,Y):
-            dw+=grad_w(w,b,x,y)
-            db+=grad_b(w,b,x,y)
-            num_points_seen+=1
+        for x, y in zip(X, Y):
+            dw += grad_w(w, b, x, y)
+            db += grad_b(w, b, x, y)
+            num_points_seen += 1
 
-            if num_points_seen%mini_batch_size==0:
-            #updating parameters after we have seen a batch of parameters (unlike stochastic GD i.e. insted of updating them at each and evey data point )
-                w=w-eta*dw
-                b=b-eta*db
-                dw,db=0,0 #reset gradients
-        # print(w,b)
+            if num_points_seen % mini_batch_size == 0:
+                
+                # Update weights after each mini-batch
+                w -= eta * dw
+                b -= eta * db
+                trajectory.append((w, b))
+                dw, db = 0, 0  # Reset gradients
+
+        # if dataset size isn't divisible by mini_batch_size
+        if num_points_seen % mini_batch_size != 0:
+            w -= eta * dw
+            b -= eta * db
+            trajectory.append((w, b))
+
+    return trajectory
+
+trajectory=do_mini_batch_gradient_descent()
+plot_contour(trajectory=trajectory,label="Mini Batch GD Path")
