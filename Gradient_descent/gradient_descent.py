@@ -12,10 +12,7 @@ def do_gragient_descent(lr=0.1,max_epochs=1000):
     # Data points
     X,Y = data_points()
 
-    init_w = -2
-    init_b = 2
-
-    w,b = init_w,init_b
+    w,b = -2,2
     eta=lr
 
     trajectory = [(w, b)]
