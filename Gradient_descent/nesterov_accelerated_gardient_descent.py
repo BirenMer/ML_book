@@ -1,53 +1,46 @@
 #WIP code
 import numpy as np
-#Sigmoid function f(x)
 
-#datapoints
-X=[0.5,2.5]
-Y=[0.2,0.0]
+from trajectory_plotting_utils import plot_contour
+from general_utils import data_points, grad_w,grad_b
 
+def do_nesterov_accelerated_gradient_descent(lr=0.1, max_epochs=1000):
+    X, Y = data_points()
+    w, b = -2, 2
+    eta = lr
+    gamma = 0.9
 
-def f(w,b,x):
-    return 1.0/(1.0 * np.exp(-(w*x+b)))
+    prev_v_w, prev_v_b = 0, 0
+    trajectory = [(w, b)]
 
-
-#Error function
-def error(w,b):
-    err=0.0
-    for x,y in zip(X,Y):
-        fx=f(w,b,x)
-        err+=0.5*(fx-y)**2
-    return err
-
-
-def grad_b(w,b,x,y):
-    fx=f(w,b,x)
-    return (fx-y) * (fx) * (1-fx)
-
-def grad_w(w,b,x,y):
-    fx=f(w,b,x)
-    return (fx-y) * (fx) * (1-fx) * x
-
-def do_nestrove_accelerated_gradient_descent(init_w,init_b,max_epochs):
-    w,b,eta=init_w,init_b,1.0
-    prev_v_w,prev_v_b,gamma=0,0,0.9
     for i in range(max_epochs):
-        dw,db=0,0
-        #do partial updates
-        v_w=gamma*prev_v_w
-        v_b=gamma*prev_v_b
-        for x,y in zip(X,Y):
-            #calculating gradients after partial update
-            dw+=grad_w(w-v_w,b-v_b,x,y)
-            db+=grad_b(w-v_w,b-v_b,x,y)
+        # Look ahead
+        lookahead_w = w - gamma * prev_v_w
+        lookahead_b = b - gamma * prev_v_b
 
-        #now do the full update 
-        v_w=gamma*prev_v_w+eta*dw
-        v_b=gamma*prev_v_b+eta*db
+        dw, db = 0, 0
+        for x, y in zip(X, Y):
+            dw += grad_w(lookahead_w, lookahead_b, x, y)
+            db += grad_b(lookahead_w, lookahead_b, x, y)
 
-        w=w-v_w
-        b=b-v_b
+        # Optional: average gradients
+        dw /= len(X)
+        db /= len(X)
 
-        prev_v_w=v_w
-        prev_v_b=v_b
-        
+        # Update velocities
+        v_w = gamma * prev_v_w + eta * dw
+        v_b = gamma * prev_v_b + eta * db
+
+        # Update parameters
+        w -= v_w
+        b -= v_b
+
+        # Save and update previous velocities
+        trajectory.append((w, b))
+        prev_v_w = v_w
+        prev_v_b = v_b
+
+    return trajectory
+
+trajectory=do_nesterov_accelerated_gradient_descent()  
+plot_contour(trajectory,label="Nesterov Accelerated GB Path")
