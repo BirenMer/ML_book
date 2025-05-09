@@ -24,8 +24,8 @@ def plot_contour(trajectory, label='Gradient Descent Path'):
     
     # plot contour
     plt.figure(figsize=(8, 6))
-    cf = plt.contourf(W, B, Z, levels=60, cmap='coolwarm')
-    cbar = plt.colorbar(cf)
+    cf = plt.contourf(W, B, Z, levels=100, cmap='coolwarm')
+    cbar = plt.colorbar(cf,orientation='horizontal')
     cbar.set_label("Error Value")
     
     # overlay trajectory
