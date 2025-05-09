@@ -1,10 +1,10 @@
 import numpy as np
 from trajectory_plotting_utils import plot_contour
-from general_utils import data_points, error, grad_w,grad_b
+from general_utils import data_points, grad_w,grad_b
 
-def do_momentum_based_gradient_descent(eta=0.1, max_epochs=1000):
+def do_momentum_based_gradient_descent(init_w=-2,init_b=2,eta=0.1, max_epochs=1000):
     X, Y = data_points()
-    w, b = -2, 2
+    w, b = init_w,init_b
     trajectory = [(w, b)]
 
     prev_v_w, prev_v_b = 0, 0

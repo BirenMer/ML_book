@@ -4,9 +4,9 @@ import numpy as np
 from trajectory_plotting_utils import plot_contour
 from general_utils import data_points, grad_w,grad_b
 
-def do_nesterov_accelerated_gradient_descent(lr=0.1, max_epochs=1000):
+def do_nesterov_accelerated_gradient_descent(init_w=-2,init_b=2,lr=0.1, max_epochs=1000):
     X, Y = data_points()
-    w, b = -2, 2
+    w, b = init_w,init_b
     eta = lr
     gamma = 0.9
 

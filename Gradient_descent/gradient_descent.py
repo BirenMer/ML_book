@@ -4,15 +4,10 @@ import numpy as np
 from general_utils import data_points, grad_w,grad_b,error
 from trajectory_plotting_utils import plot_contour
 
-
-
-def do_gragient_descent(lr=0.1,max_epochs=1000):
-    #trying to converge gradient descent for the below two point i.e. 
-    # GD will optimized it self to reach convergence while trying to include this points in it trajectory. 
-    # Data points
+def do_gragient_descent(init_w=-2,init_b=2,lr=0.1,max_epochs=1000):
     X,Y = data_points()
 
-    w,b = -2,2
+    w,b = init_w,init_b
     eta=lr
 
     trajectory = [(w, b)]
