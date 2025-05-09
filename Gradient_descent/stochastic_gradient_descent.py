@@ -1,41 +1,29 @@
-#WIP code
 import numpy as np
-#Sigmoid function f(x)
 
-#datapoints
-X=[0.5,2.5]
-Y=[0.2,0.0]
+from trajectory_plotting_utils import plot_contour
+from general_utils import data_points, grad_w,grad_b
 
-
-def f(w,b,x):
-    return 1.0/(1.0 * np.exp(-(w*x+b)))
-
-
-#Error function
-def error(w,b):
-    err=0.0
-    for x,y in zip(X,Y):
-        fx=f(w,b,x)
-        err+=0.5*(fx-y)**2
-    return err
-
-
-def grad_b(w,b,x,y):
-    fx=f(w,b,x)
-    return (fx-y) * (fx) * (1-fx)
-
-def grad_w(w,b,x,y):
-    fx=f(w,b,x)
-    return (fx-y) * (fx) * (1-fx) * x
 #this code updates the parameters at evey point,
-def do_stochastic_gragient_descent():
-    w,b,eta,max_epochs=-2,-2,1.0,1000
-    for i in range(max_epochs):
+def do_stochastic_gradient_descent(lr=0.1,max_epochs=1000):
+    w, b = -2, 2
+    eta = lr
+
+    X,Y = data_points()
+    trajectory = [(w, b)]
+
+    for epoch in range(max_epochs):
         dw,db=0,0
         for x,y in zip(X,Y):
-            dw+=grad_w(w,b,x,y)
-            db+=grad_b(w,b,x,y)
-            #Updating parameters at each and evey data point unlike vanilla GD
-            w=w-eta*dw
-            b=b-eta*db
-        # print(w,b)
+            dw = grad_w(w,b,x,y)
+            db = grad_b(w,b,x,y)
+           
+            #Updating weights at every data point
+            w = w - eta * dw
+            b = b - eta * db
+            
+            trajectory.append((w, b))
+    return trajectory
+
+trajectory=do_stochastic_gradient_descent()
+
+plot_contour(trajectory=trajectory,label="SGD Path")
