@@ -4,8 +4,8 @@ from trajectory_plotting_utils import plot_contour
 from general_utils import data_points, grad_w,grad_b
 
 #this code updates the parameters at evey point,
-def do_stochastic_gradient_descent(lr=0.1,max_epochs=1000):
-    w, b = -2, 2
+def do_stochastic_gradient_descent(init_w=-2,init_b=2,lr=0.1,max_epochs=1000):
+    w, b = init_w,init_b
     eta = lr
 
     X,Y = data_points()
