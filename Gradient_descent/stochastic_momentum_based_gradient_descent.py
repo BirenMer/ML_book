@@ -29,4 +29,4 @@ def do_stochastic_momentum_based_gradient_descent(init_w=-2, init_b=2, lr=0.1, m
 
     return trajectory
 trajectory=do_stochastic_momentum_based_gradient_descent()
-plot_contour(trajectory=trajectory,label="Stochastic Momentum Based GD")
+plot_contour(trajectory=trajectory,label="Stochastic Momentum Based")
