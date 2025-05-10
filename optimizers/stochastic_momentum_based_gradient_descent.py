@@ -28,5 +28,10 @@ def do_stochastic_momentum_based_gradient_descent(init_w=-2, init_b=2, lr=0.1, m
             trajectory.append((w, b))
 
     return trajectory
-trajectory=do_stochastic_momentum_based_gradient_descent()
-plot_contour(trajectory=trajectory,label="Stochastic Momentum Based")
+def main():
+        
+    trajectory=do_stochastic_momentum_based_gradient_descent()
+    plot_contour(trajectory=trajectory,label="Stochastic Momentum Based")
+
+if __name__ == "__main__":
+    main()

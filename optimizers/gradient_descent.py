@@ -1,6 +1,4 @@
 #vannila gradient descent
-import numpy as np
-
 from general_utils import data_points, grad_w,grad_b,error
 from trajectory_plotting_utils import plot_contour
 
@@ -30,6 +28,10 @@ def do_gragient_descent(init_w=-2,init_b=2,lr=0.1,max_epochs=1000):
 
     return trajectory
 
-gradient_descent_trajectory=do_gragient_descent()
+def main():
+    gradient_descent_trajectory=do_gragient_descent()
 
-plot_contour(gradient_descent_trajectory)
+    plot_contour(gradient_descent_trajectory)
+    
+if __name__ == "__main__":
+    main()

@@ -3,9 +3,9 @@ import numpy as np
 from trajectory_plotting_utils import plot_contour
 from general_utils import data_points, grad_w, grad_b, error
 
-def do_line_search_gradient_descent(init_w=-2, init_b=2, max_epochs=1000):
+def do_line_search_gradient_descent(init_w=-2, init_b=2, lrs:list=[0.1, 0.5, 1.0, 5.0, 10.0], max_epochs=1000):
     w, b = init_w, init_b
-    etas = [0.1, 0.5, 1.0, 5.0, 10.0]
+    etas = lrs
     X, Y = data_points()
     trajectory = [(w, b)]
 
@@ -33,6 +33,10 @@ def do_line_search_gradient_descent(init_w=-2, init_b=2, max_epochs=1000):
 
     return trajectory
 
-trajectory=do_line_search_gradient_descent()
+def main():
+    trajectory=do_line_search_gradient_descent()
 
-plot_contour(trajectory=trajectory,label="Line Search GD")
+    plot_contour(trajectory=trajectory,label="Line Search GD")
+
+if __name__ == "__main__":
+    main()

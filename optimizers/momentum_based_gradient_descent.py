@@ -34,6 +34,10 @@ def do_momentum_based_gradient_descent(init_w=-2,init_b=2,eta=0.1, max_epochs=10
 
     return trajectory
 
-trajectory=do_momentum_based_gradient_descent()
+def main():
+    trajectory=do_momentum_based_gradient_descent()
 
-plot_contour(trajectory,label="Momentum GD Path")
+    plot_contour(trajectory,label="Momentum GD")
+
+if __name__ == "__main__":
+    main()

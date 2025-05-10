@@ -5,7 +5,7 @@ from general_utils import data_points, grad_w,grad_b
 import numpy as np
 
 
-def do_stochastic_nesterov_accelerated_gradient_descent(init_w, init_b, lr=0.1, max_epochs=1000):
+def do_stochastic_nesterov_accelerated_gradient_descent(init_w=-2, init_b=2, lr=0.1, max_epochs=1000):
     w, b = init_w, init_b
     eta = lr
     gamma = 0.9
@@ -37,5 +37,10 @@ def do_stochastic_nesterov_accelerated_gradient_descent(init_w, init_b, lr=0.1, 
             trajectory.append((w, b))
 
     return trajectory
-trajectory=do_stochastic_nesterov_accelerated_gradient_descent()
-plot_contour(trajectory=trajectory,label="Stochastic Nesterov Accelerated GD Path")
+
+def main():
+    trajectory=do_stochastic_nesterov_accelerated_gradient_descent()
+    plot_contour(trajectory=trajectory,label="Stochastic Nesterov Accelerated GD")
+
+if __name__ == "__main__":
+    main()

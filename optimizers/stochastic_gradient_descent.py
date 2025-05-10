@@ -24,6 +24,10 @@ def do_stochastic_gradient_descent(init_w=-2,init_b=2,lr=0.1,max_epochs=1000):
             trajectory.append((w, b))
     return trajectory
 
-trajectory=do_stochastic_gradient_descent()
+def main():
+    trajectory=do_stochastic_gradient_descent()
 
-plot_contour(trajectory=trajectory,label="SGD Path")
+    plot_contour(trajectory=trajectory,label="SGD")
+
+if __name__ == "__main__":
+    main()

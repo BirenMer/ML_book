@@ -29,5 +29,10 @@ def do_rmsprop(init_w=-2, init_b=2, lr=0.1, max_epochs=1000):
         trajectory.append((w, b))
 
     return trajectory
-trajectory=do_rmsprop()
-plot_contour(trajectory=trajectory,label="RMSPROP Path")
+
+def main():
+    trajectory=do_rmsprop()
+    plot_contour(trajectory=trajectory,label="RMSPROP")
+
+if __name__ == "__main__":
+    main()

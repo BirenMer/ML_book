@@ -42,5 +42,9 @@ def do_nesterov_accelerated_gradient_descent(init_w=-2,init_b=2,lr=0.1, max_epoc
 
     return trajectory
 
-trajectory=do_nesterov_accelerated_gradient_descent()  
-plot_contour(trajectory,label="Nesterov Accelerated GB Path")
+def main():
+    trajectory=do_nesterov_accelerated_gradient_descent()  
+    plot_contour(trajectory,label="Nesterov Accelerated GB")
+
+if __name__ == "__main__":
+    main()

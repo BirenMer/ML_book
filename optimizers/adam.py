@@ -53,5 +53,9 @@ def do_adam(init_w=-2, init_b=2, lr=0.01, max_epochs=1000, mini_batch_size=10):
             trajectory.append((w, b))
 
     return trajectory
-trajectory=do_adam()
-plot_contour(trajectory=trajectory,label="Adam Path")
+def main():
+    trajectory=do_adam()
+    plot_contour(trajectory=trajectory,label="Adam")
+
+if __name__ == "__main__":
+    main()

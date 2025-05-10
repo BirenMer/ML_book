@@ -32,5 +32,9 @@ def do_mini_batch_gradient_descent(init_w=-2, init_b=2, lr=0.1, max_epochs=1000,
 
     return trajectory
 
-trajectory=do_mini_batch_gradient_descent()
-plot_contour(trajectory=trajectory,label="Mini Batch GD Path")
+def main():
+    trajectory=do_mini_batch_gradient_descent()
+    plot_contour(trajectory=trajectory,label="Mini Batch GD")
+
+if __name__ == "__main__":
+    main()

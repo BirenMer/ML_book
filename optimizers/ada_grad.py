@@ -26,5 +26,10 @@ def do_adagrad(init_w=-2, init_b=2, max_epochs=1000, lr=0.1):
         trajectory.append((w, b))
 
     return trajectory
-trajectory=do_adagrad()
-plot_contour(trajectory=trajectory,label="ada_grad Path")
+
+def main():
+    trajectory=do_adagrad()
+    plot_contour(trajectory=trajectory,label="ada_grad")
+
+if __name__ == "__main__":
+    main()
